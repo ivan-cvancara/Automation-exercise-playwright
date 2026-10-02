@@ -1,4 +1,3 @@
-import { expect } from '@playwright/test';
 import { startAtAutomationExerciseHome, test } from '../fixtures/automation-exercise.fixture';
 
 test.describe('Catalog, search, subscription (Automation Exercise)', () => {
@@ -9,25 +8,27 @@ test.describe('Catalog, search, subscription (Automation Exercise)', () => {
   });
 
   test('TS8 — products list and first product detail', async ({ ae }) => {
+    const FIRST_PRODUCT = { name: 'Blue Top', category: 'Women > Tops', price: 'Rs. 500' };
+
     await startAtAutomationExerciseHome(ae);
+
     await ae.openAllProducts();
     await ae.expectAllProductsPage();
     await ae.openViewProductFirst();
     await ae.expectProductDetailsPage();
+    await ae.expectProductInformation(FIRST_PRODUCT);
   });
 
-  test('TS9 — search product lists matching cards', async ({ ae, page }) => {
+  test('TS9 — search product lists matching cards', async ({ ae }) => {
+    const SEARCH_TERM = 'Blue';
+
     await startAtAutomationExerciseHome(ae);
+
     await ae.openAllProducts();
     await ae.expectAllProductsPage();
-    await ae.searchProductsOnListing('Blue');
+    await ae.searchProductsOnListing(SEARCH_TERM);
     await ae.expectSearchedProducts();
-    const count = await page.locator('.col-sm-4').count();
-    for (let i = 1; i < count; i++) {
-      const product = page.locator('.col-sm-4').nth(i);
-      const name = (await product.locator('.productinfo p').textContent() ?? '').toLowerCase();
-      expect(name).toContain('blue');
-    }
+    await ae.expectAllSearchResultsContain(SEARCH_TERM);
   });
 
   test('TS10 — subscription in footer (home)', async ({ ae }) => {

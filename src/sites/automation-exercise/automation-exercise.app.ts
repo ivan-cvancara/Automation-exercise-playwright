@@ -1,9 +1,17 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { clickWhenVisible, expectTitleIs, expectVisible, fillWhenVisible, scrollPageToBottom, selectOptionByLabel } from '@/core/web-core';
 import type { TestUser } from '@/data/types';
+import { multiplyPrice } from '@/utils/price';
 import { Ae } from './locators';
 
 const HOME_TITLE = 'Automation Exercise';
+
+/** A product as a shopper sees it on a listing: name and displayed price (e.g. `"Rs. 500"`). */
+export type ListedProduct = { name: string; price: string };
+
+export type ProductInfo = ListedProduct & { category: string };
+
+export type CartItem = ListedProduct & { quantity: number };
 
 /**
  * Page/service object for https://automationexercise.com — high-level steps (Robot `AutomationExercise.resource`).
@@ -154,7 +162,7 @@ export class AutomationExerciseApp {
       'Automation Practice Website for UI Testing - Test Cases',
     );
   }
-
+  
   async openAllProducts(): Promise<void> {
     await clickWhenVisible(this.page.getByRole('link', { name: /Products/ }));
   }
@@ -165,19 +173,28 @@ export class AutomationExerciseApp {
   }
 
   async openViewProductFirst(): Promise<void> {
-    await clickWhenVisible(this.page.locator('.choose > .nav > li > a').first());
+    await clickWhenVisible(Ae.viewProductLink(this.page).first());
   }
 
-  async expectProductDetailsPage(blueTopChecks = true): Promise<void> {
+  /** Opens “View Product” of the first listed product whose name contains `productName`. */
+  async openProductDetails(productName: string): Promise<void> {
+    const tile = await this.findProductTileByNameOrThrow(productName);
+    await clickWhenVisible(Ae.viewProductLink(tile));
+  }
+
+  /** Checks the detail page layout that every product shares (title + info labels). */
+  async expectProductDetailsPage(): Promise<void> {
     await expectTitleIs(this.page, 'Automation Exercise - Product Details');
-    if (blueTopChecks) {
-      await expect(this.page.getByRole('heading', { name: 'Blue Top' })).toBeVisible();
-      await expect(this.page.getByText('Category: Women > Tops')).toBeVisible();
-      await expect(this.page.getByText('Rs. 500')).toBeVisible();
-      for (const t of ['Availability:', 'Condition:', 'Brand:'] as const) {
-        await expect(this.page.getByText(t)).toBeVisible();
-      }
+    for (const label of ['Availability:', 'Condition:', 'Brand:'] as const) {
+      await expect(Ae.productDetailInfo(this.page).getByText(label)).toBeVisible();
     }
+  }
+
+  async expectProductInformation(product: ProductInfo): Promise<void> {
+    const info = Ae.productDetailInfo(this.page);
+    await expect(info.getByRole('heading', { name: product.name })).toBeVisible();
+    await expect(info.getByText(`Category: ${product.category}`)).toBeVisible();
+    await expect(Ae.productDetailPrice(this.page)).toHaveText(product.price);
   }
 
   async searchProductsOnListing(term: string): Promise<void> {
@@ -189,6 +206,24 @@ export class AutomationExerciseApp {
 
   async expectSearchedProducts(): Promise<void> {
     await expect(this.page.getByText(/Searched Products/i)).toBeVisible();
+  }
+
+  /** At least one result is shown and every listed product name contains `term` (case-insensitive). */
+  async expectAllSearchResultsContain(term: string): Promise<void> {
+    const names = Ae.productNames(this.page);
+    await expect(names.first()).toBeVisible();
+    for (const name of await names.all()) {
+      await expect(name).toContainText(term, { ignoreCase: true });
+    }
+  }
+
+  /** Reads name and price of the n-th product on a listing, as a shopper would note them (1 = first product). */
+  async readListedProduct(position: number): Promise<ListedProduct> {
+    const tile = this.productTileAt(position);
+    return {
+      name: await this.readProductNameInTile(tile),
+      price: await this.readProductPriceInTile(tile),
+    };
   }
 
   productTileAt(index1Based: number): Locator {
@@ -227,12 +262,17 @@ export class AutomationExerciseApp {
     return null;
   }
 
-  async addNamedProductToCartFromHomeOrListing(productName: string): Promise<void> {
-    const tile = await this.findProductTileByName(productName);
+  async findProductTileByNameOrThrow(nameContains: string): Promise<Locator> {
+    const tile = await this.findProductTileByName(nameContains);
     if (!tile) {
-      throw new Error(`Product not found: ${productName}`);
+      throw new Error(`Product not found: ${nameContains}`);
     }
-    await this.addProductFromTileToCart(tile);
+    return tile;
+  }
+
+  /** Adds a product to the cart from the home page or a listing (hover → “Add to cart”). */
+  async addProductToCart(productName: string): Promise<void> {
+    await this.addProductFromTileToCart(await this.findProductTileByNameOrThrow(productName));
   }
 
   async openCartFromHeader(): Promise<void> {
@@ -254,12 +294,8 @@ export class AutomationExerciseApp {
     await expect(this.page.getByText('You have been successfully subscribed!')).toBeVisible();
   }
 
-  async openProductDetailsByHref(path: string): Promise<void> {
-    await this.page.locator(`a[href="${path}"]`).first().click();
-  }
-
-  async setQuantity(quantity: string): Promise<void> {
-    await fillWhenVisible(Ae.quantityInput(this.page), quantity);
+  async setQuantity(quantity: number): Promise<void> {
+    await fillWhenVisible(Ae.quantityInput(this.page), String(quantity));
   }
 
   async addToCartOnDetailPage(): Promise<void> {
@@ -271,19 +307,21 @@ export class AutomationExerciseApp {
   }
 
   async readDetailProductName(): Promise<string> {
-    const t = await this.page.locator('.product-information h2').textContent();
+    const t = await Ae.productDetailInfo(this.page).locator('h2').textContent();
     return (t ?? '').trim();
   }
 
-  cartPriceForRow(numericId: string): Locator {
-    return Ae.cartRow(this.page, numericId).locator('.cart_price');
+  async readDetailProductPrice(): Promise<string> {
+    const t = await Ae.productDetailPrice(this.page).textContent();
+    return (t ?? '').trim();
   }
 
-  cartQuantityForRow(numericId: string): Locator {
-    return Ae.cartRow(this.page, numericId).locator('.cart_quantity');
-  }
-
-  cartTotalForRow(numericId: string): Locator {
-    return Ae.cartRow(this.page, numericId).locator('.cart_total');
+  /** The cart has a row for the product with its unit price, quantity and line total (price × quantity). */
+  async expectProductInCart(item: CartItem): Promise<void> {
+    const row = Ae.cartRowByProductName(this.page, item.name);
+    await expect(row).toBeVisible();
+    await expect(row.locator('.cart_price')).toContainText(item.price);
+    await expect(row.locator('.cart_quantity')).toHaveText(String(item.quantity));
+    await expect(row.locator('.cart_total')).toContainText(multiplyPrice(item.price, item.quantity));
   }
 }

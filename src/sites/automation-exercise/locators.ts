@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
  * Central locators for automationexercise.com (same idea as `${AE_LOC_*}` in Robot).
@@ -29,10 +29,16 @@ export const Ae = {
   monthSelect: (p: Page) => p.locator('#months'),
   yearSelect: (p: Page) => p.locator('#years'),
   productCards: (p: Page) => p.locator('.col-sm-4'),
+  productNames: (p: Page) => p.locator('.features_items .productinfo p'),
+  /** “View Product” link; pass a product tile to scope it to one product. */
+  viewProductLink: (scope: Page | Locator) => scope.locator('.choose .nav a'),
+  productDetailInfo: (p: Page) => p.locator('.product-information'),
+  productDetailPrice: (p: Page) => p.locator('.product-information > span > span'),
   searchInput: (p: Page) => p.locator('#search_product'),
   searchSubmit: (p: Page) => p.locator('#submit_search'),
   subscribeEmail: (p: Page) => p.getByPlaceholder('Your email address'),
   subscribeButton: (p: Page) => p.locator('#subscribe'),
   quantityInput: (p: Page) => p.locator('#quantity'),
-  cartRow: (p: Page, id: string) => p.locator(`#product-${id}`),
+  cartRowByProductName: (p: Page, name: string) =>
+    p.locator('#cart_info_table tbody tr').filter({ has: p.locator('.cart_description').getByText(name, { exact: true }) }),
 } as const;

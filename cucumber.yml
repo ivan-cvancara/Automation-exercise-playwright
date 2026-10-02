@@ -1,0 +1,17 @@
+# https://github.com/cucumber/cucumber-js/blob/main/docs/configuration.md
+default:
+  publish: false
+  paths:
+    - features/**/*.feature
+  requireModule:
+    - ts-node/register
+    - tsconfig-paths/register
+  require:
+    - features/support/world.ts
+    - features/support/hooks.ts
+    - features/step_definitions/**/*.ts
+  format:
+    - pretty
+    - html:test-results/cucumber-report.html
+  formatOptions:
+    snippetInterface: async-await

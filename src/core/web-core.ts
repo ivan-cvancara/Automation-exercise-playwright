@@ -20,6 +20,11 @@ export async function expectVisible(locator: Locator, options?: { timeout?: numb
   await expect(locator).toBeVisible(options);
 }
 
+/** Asserts that `text` is visible somewhere on the page (substring match over the whole document). */
+export async function expectTextVisible(page: Page, text: string): Promise<void> {
+  await expect(page.getByText(text, { exact: false }).first()).toBeVisible();
+}
+
 export async function clickWhenVisible(locator: Locator, options?: { timeout?: number }): Promise<void> {
   await locator.waitFor({ state: 'visible', timeout: options?.timeout });
   await locator.click();

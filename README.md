@@ -11,9 +11,9 @@ npm test
 ```
 
 - `npm run test:ae` — pouze `tests/automation-exercise/`
-- `npm run test:smoke` — krátké testy cizího webu (Playwright docs)
-- `npm run test:examples` — ukázkový TodoMVC z Playwright
 - `npm run test:ui` — režim s UI
+- `npm run test:cucumber` – Gherkin scénáře ve `features/` (zrcadlí specy v `tests/automation-exercise/`)
+- `npx cucumber-js --tags @TS9` – jeden scénář podle tagu (nebo `@auth`, `@catalog`, `@cart`)
 
 ## Struktura
 
@@ -25,8 +25,6 @@ npm test
 | `src/sites/automation-exercise/` | Konkrétní stránka: `locators`, `automation-exercise.app.ts` |
 | `tests/fixtures/automation-exercise.fixture.ts` | `test` rozšířené o `ae` (page object) + `startAtAutomationExerciseHome` |
 | `tests/automation-exercise/*.spec.ts` | Samotné scénáře — krátké, volají `ae` / sdílené kroky |
-| `tests/smoke/` | Nezávislý kouřový běh mimo A.E. |
-| `tests/examples/` | Oficiální demo spec (dlouhý) |
 | `playwright.config.ts` | `testDir: tests`, `use.baseURL` = Automation Exercise |
 
 Nové testy: přidávej metody do `AutomationExerciseApp` nebo do `web-core.ts`, doplň data do `users.json` (klíč = název testu) a v specu používej `import { test } from '../fixtures/automation-exercise.fixture'`.

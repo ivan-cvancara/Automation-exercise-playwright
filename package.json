@@ -8,15 +8,22 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:ae": "playwright test tests/automation-exercise",
-    "test:smoke": "playwright test tests/smoke",
-    "test:examples": "playwright test tests/examples",
+    "test:cucumber": "cucumber-js",
     "report": "playwright show-report"
   },
-  "keywords": ["playwright", "e2e", "testing"],
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing"
+  ],
   "license": "ISC",
   "devDependencies": {
+    "@cucumber/cucumber": "^12.8.3",
+    "@cucumber/pretty-formatter": "^3.3.0",
     "@playwright/test": "^1.59.1",
     "@types/node": "^22.15.17",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   }
 }

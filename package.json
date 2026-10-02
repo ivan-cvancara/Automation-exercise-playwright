@@ -9,6 +9,8 @@
     "test:headed": "playwright test --headed",
     "test:ae": "playwright test tests/automation-exercise",
     "test:cucumber": "cucumber-js",
+    "steps": "node scripts/list-steps.js",
+    "inspect": "ts-node -r tsconfig-paths/register scripts/inspect-page.ts",
     "report": "playwright show-report"
   },
   "keywords": [

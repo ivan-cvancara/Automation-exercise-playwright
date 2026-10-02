@@ -1,4 +1,6 @@
 {
     "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": false
+    "python.testing.unittestEnabled": false,
+    "cucumber.features": ["features/**/*.feature"],
+    "cucumber.glue": ["features/step_definitions/**/*.ts", "features/support/**/*.ts"]
 }

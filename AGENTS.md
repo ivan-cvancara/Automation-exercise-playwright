@@ -2,14 +2,22 @@
 
 Guidance for AI coding agents (and humans) working in this repository.
 
+**Project language is English.** Code, comments, test titles, Gherkin, docs, README and commit
+messages are written in English, even when the conversation with the user is in another language.
+
 **Before writing code, read the detailed guide for the task:**
 
 | Task | Read |
 |------|------|
 | Adding or changing a spec, `.feature` file or step definition | [docs/agents/writing-tests.md](docs/agents/writing-tests.md) |
 | Adding or changing app methods, locators, helpers or utilities in `src/` | [docs/agents/writing-functions.md](docs/agents/writing-functions.md) |
+| **Implementing a Gherkin scenario the user wrote** (tagged `@new`, or undefined steps) | [docs/agents/implementing-scenarios.md](docs/agents/implementing-scenarios.md) (all three guides apply) |
 
 This file contains the overview, commands and the short version of the rules.
+
+**Main workflow:** the user writes Gherkin scenarios by hand, the agent implements everything else
+(step definitions, app methods, locators, the twin Playwright spec) and verifies both runners.
+In Claude Code this is the `/implement-scenario` skill (`.claude/skills/implement-scenario/`).
 
 ## Project overview
 
@@ -36,6 +44,8 @@ npm run test:cucumber                       # Cucumber scenarios (headless Chrom
 npx cucumber-js --tags @TS9                 # single scenario / area by tag (@auth, @catalog, @cart)
 npm test                                    # full Playwright suite, all 3 browsers (what CI runs)
 npm run report                              # open the last HTML report
+npm run steps                               # catalog of existing Cucumber steps (-- --write updates docs/steps-catalog.md)
+npm run inspect -- /contact_us              # ARIA snapshot + form controls of a live page, for designing locators
 ```
 
 Other scripts: `test:ui`, `test:headed`.
@@ -54,7 +64,11 @@ Other scripts: `test:ui`, `test:headed`.
 | `features/automation-exercise/` | `*.feature` twins of the specs (`auth`, `catalog`, `cart`) + `smoke.feature` |
 | `features/step_definitions/`, `features/support/` | Step definitions by page/area, World + hooks |
 | `src/utils/` | Pure formatting and conversion functions (`price.ts`) |
-| `docs/agents/` | Detailed agent guides for writing tests and functions |
+| `docs/agents/` | Detailed agent guides: writing tests, writing functions, implementing scenarios |
+| `docs/writing-scenarios.md`, `docs/scenario-template.feature` | User guide and template for writing scenarios |
+| `docs/steps-catalog.md` | Generated catalog of all step definitions (`npm run steps -- --write`) |
+| `scripts/` | `list-steps.js` (step catalog), `inspect-page.ts` (page inspector) |
+| `.claude/skills/implement-scenario/` | Claude Code skill for the main workflow |
 | `playwright.config.ts`, `cucumber.yml`, `tsconfig.json` | Runner and compiler config |
 
 Import from `src/` via the `@/` alias (`@/core/web-core`, `@/sites/...`). It works in both runners
@@ -165,6 +179,9 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
   existing steps before adding new ones, and use Cucumber expressions (`{string}`, `{int}`) for
   parameters. Keep steps thin, put logic into `AutomationExerciseApp`.
 - The HTML report goes to `test-results/cucumber-report.html`.
+- Scenarios tagged `@new` are written by the user and not implemented yet. Implement them by
+  [docs/agents/implementing-scenarios.md](docs/agents/implementing-scenarios.md), then replace the tag with `@TSxx` / `@TCxx`.
+- After adding or changing step definitions, refresh the catalog: `npm run steps -- --write`.
 
 ## Known pitfalls
 
@@ -195,7 +212,7 @@ weakening the assertion.
 ## Boundaries
 
 - **Do:** keep changes small and focused, follow the existing naming and comment style, update
-  `README.md` (Czech) when you change commands or structure.
+  `README.md` when you change commands or structure.
 - **Ask first:** adding or upgrading dependencies (then run `npx playwright install`), changing
   `playwright.config.ts`, `cucumber.yml`, `tsconfig.json` or the CI workflow.
 - **Don't:** commit `node_modules/`, `test-results/`, `playwright-report/`, edit generated reports,

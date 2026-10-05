@@ -28,7 +28,7 @@ Every test follows the same four phases. Do not mix them.
 
 1. **Data** – load and prepare test data (`getUserByTestName`, `withUniqueEmail`, constants).
 2. **Start** – put the browser into the starting state a tester would begin from
-   (`await startAtAutomationExerciseHome(ae)`).
+   (`await ae.startAtHome()`).
 3. **Steps and checks** – the user journey: actions interleaved with checks, in human order.
 4. **Cleanup** – undo what the test created (for example delete the account), done through the UI
    steps a human would use.
@@ -39,7 +39,7 @@ test('TS2 - login with correct email and password, then delete account', async (
   test.skip(!base, 'Add key TC01 Register User in src/data/users.json');
   const user = withUniqueEmail(base!);
 
-  await startAtAutomationExerciseHome(ae);
+  await ae.startAtHome();
 
   await ae.registerNewUserComplete(user);
   await ae.logout();
@@ -75,7 +75,7 @@ used by Cucumber, where `test.step` throws.
 
 **Allowed** in a test body:
 
-- calls of `ae.*` methods and of fixture helpers such as `startAtAutomationExerciseHome`,
+- calls of `ae.*` methods (including the start flow `ae.startAtHome()`),
 - loading and preparing data (`getUserByTestName`, `withUniqueEmail`, named constants),
 - formatting and conversion helpers from `src/utils/` (see [writing-functions.md](writing-functions.md)),
 - `expect(...)` on values or locators returned by `ae.*` when no `expectX` method fits yet,
@@ -100,7 +100,7 @@ Each line is a step from the manual test case "search for Blue, every result is 
 test('TS9 - search shows only matching products', async ({ ae }) => {
   const SEARCH_TERM = 'Blue';
 
-  await startAtAutomationExerciseHome(ae);
+  await ae.startAtHome();
 
   await ae.openAllProducts();
   await ae.expectAllProductsPage();
@@ -166,7 +166,7 @@ when you add, change or remove a test in a spec, do the same in its feature (and
 |------------|----------|
 | `tests/automation-exercise/<area>.spec.ts` | `features/automation-exercise/<area>.feature` |
 | `test.describe('<name>')` | `Feature: <name>` + a feature tag (`@auth`, `@catalog`, `@cart`) |
-| data + `startAtAutomationExerciseHome` shared by all tests | `Background:` with the same steps in the same order |
+| data + `ae.startAtHome()` shared by all tests | `Background:` with the same steps in the same order |
 | `test('TSxx - <title>')` | `Scenario: TSxx - <title>` with tags `@TSxx @TCxx` |
 | one `ae.*` call | one Gherkin step (one step definition calling that one method) |
 | named constants in the data phase | values written directly in the step (`"Blue Top"`, `4`, data table) |

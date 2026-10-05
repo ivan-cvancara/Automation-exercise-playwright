@@ -8,10 +8,3 @@ export const test = base.extend<{ ae: AutomationExerciseApp }>({
 });
 
 export { expect } from '@playwright/test';
-
-/** Starting state of every test: home page open, cookie consent accepted. */
-export async function startAtAutomationExerciseHome(ae: AutomationExerciseApp): Promise<void> {
-  await ae.openHome();
-  await ae.acceptCookieConsent();
-  await ae.expectHomePage();
-}

@@ -1,8 +1,8 @@
-import { startAtAutomationExerciseHome, test } from '../fixtures/automation-exercise.fixture';
+import { test } from '../fixtures/automation-exercise.fixture';
 
 test.describe('Cart & checkout smoke (Automation Exercise)', () => {
   test('TS12 — add two products and verify cart rows', async ({ ae }) => {
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
 
     await ae.openAllProducts();
     const firstProduct = await ae.readListedProduct(1);
@@ -21,7 +21,7 @@ test.describe('Cart & checkout smoke (Automation Exercise)', () => {
     const PRODUCT_NAME = 'Blue Top';
     const QUANTITY = 4;
 
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
 
     await ae.openProductDetails(PRODUCT_NAME);
     await ae.expectProductDetailsPage();
@@ -34,7 +34,7 @@ test.describe('Cart & checkout smoke (Automation Exercise)', () => {
   });
 
   test('TS14 — add named product to cart and open cart (checkout smoke)', async ({ ae }) => {
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
 
     await ae.addProductToCart('Sleeveless Dress');
     await ae.clickContinueShopping();

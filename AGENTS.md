@@ -59,11 +59,12 @@ Other scripts: `test:ui`, `test:headed`.
 | Path | Purpose |
 |------|---------|
 | `src/config/env.ts` | `AUTOMATION_EXERCISE_BASE` (from `BASE_URL`, defaults to the public site) |
+| `src/config/browser.ts` | Device emulation and action/navigation timeouts shared by both runners |
 | `src/core/web-core.ts` | Site-agnostic helpers (`expectTextVisible`); no wrappers around plain Playwright calls |
 | `src/sites/automation-exercise/locators.ts` | All Automation Exercise locators, exported as the `Ae` object |
 | `src/sites/automation-exercise/automation-exercise.app.ts` | `AutomationExerciseApp`: page/service object with high-level steps |
 | `src/data/users.json`, `user-loader.ts`, `types.ts` | Test data keyed by name, `getUserByTestName`, `withUniqueEmail`, `TestUser` |
-| `tests/fixtures/automation-exercise.fixture.ts` | `test` extended with the `ae` fixture, `startAtAutomationExerciseHome` |
+| `tests/fixtures/automation-exercise.fixture.ts` | `test` extended with the `ae` fixture |
 | `tests/automation-exercise/` | Automation Exercise specs (`auth`, `catalog`, `cart`) |
 | `features/automation-exercise/` | `*.feature` twins of the specs (`auth`, `catalog`, `cart`) + `smoke.feature` |
 | `features/step_definitions/`, `features/support/` | Step definitions by page/area, World + hooks |
@@ -107,7 +108,7 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
   browser. Each line is one step a human does or checks, in the order a human does it.
 - Tests use business language (`ae.openCartFromHeader()`, `ae.expectLoginError()`), never DOM details.
   No selectors, loops, conditions or calculations in specs or step definitions.
-- Test body phases: **data**, **start** (`startAtAutomationExerciseHome`), **steps and checks**,
+- Test body phases: **data**, **start** (`ae.startAtHome()`), **steps and checks**,
   **cleanup**, separated by blank lines.
 - One app method = one human step, named with a verb prefix: `open*`, `click*`, `fill*`, `select*`,
   `submit*`, `expect*` (check), `read*` (return a visible value), `find*`. Flow methods
@@ -122,7 +123,7 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
 - Automation Exercise specs import `test` (and optionally `expect`) from
   `tests/fixtures/automation-exercise.fixture.ts`, never from `@playwright/test` directly, otherwise
   the `ae` fixture is missing.
-- Start each test with `await startAtAutomationExerciseHome(ae)` (opens `/`, accepts the cookie
+- Start each test with `await ae.startAtHome()` (opens `/`, accepts the cookie
   consent dialog, checks the home page title).
 - `baseURL` is the Automation Exercise URL (from `src/config/env.ts`), so use relative paths
   (`page.goto('/login')`). For any other site use a full URL (`page.goto('https://...')`).
@@ -173,11 +174,12 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
   [docs/agents/writing-tests.md](docs/agents/writing-tests.md#cucumber-scenarios).
 - Cucumber does not use the Playwright Test runner, so `test.extend` fixtures and `playwright.config.ts`
   do not apply. Inside steps use the World (`this.page`, `this.ae`, typed as
-  `this: AutomationExerciseWorld`) and reuse helpers from `src/` and `tests/fixtures/`
-  (for example `startAtAutomationExerciseHome`).
+  `this: AutomationExerciseWorld`) and reuse helpers from `src/` (for example
+  `this.ae.startAtHome()`). Step definitions never import from `tests/`; code both runners need lives in `src/`.
 - Step functions must be regular `async function`, not arrow functions, otherwise `this` is not the World.
 - `features/support/hooks.ts` launches one headless browser per worker (`BROWSER` env, Chromium by
-  default) and a fresh browser context per scenario with `baseURL` set to `AUTOMATION_EXERCISE_BASE`,
+  default) and a fresh browser context per scenario with `baseURL` set to `AUTOMATION_EXERCISE_BASE`
+  and the same device and action/navigation timeouts as the Playwright projects (`src/config/browser.ts`),
   and sets the step timeout to 30 s (Cucumber's 5 s default is too short for flow steps on the live
   site). On failure it attaches a screenshot to the report and saves a trace to
   `test-results/cucumber-traces/`. `cucumber.yml` runs 2 parallel workers.

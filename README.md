@@ -67,13 +67,14 @@ features/
   support/                        Cucumber World and hooks (browser lifecycle)
 tests/
   automation-exercise/*.spec.ts   Playwright specs, same steps as the features
-  fixtures/                       `test` with the `ae` fixture, startAtAutomationExerciseHome
+  fixtures/                       `test` with the `ae` fixture
 src/
   sites/automation-exercise/      locators.ts (selectors) + automation-exercise.app.ts (page steps)
   core/web-core.ts                Generic site-independent helpers (kept minimal)
   data/                           Test users (users.json) and loaders
   utils/                          Pure formatting and conversion helpers (prices)
   config/env.ts                   Base URL (overridable with BASE_URL)
+  config/browser.ts               Devices and timeouts shared by both runners
 docs/                             Guides, scenario template, step catalog
 scripts/                          Step catalog and page inspector
 ```

@@ -1,12 +1,12 @@
 import { getUserByTestName, withUniqueEmail } from '@/data/user-loader';
-import { startAtAutomationExerciseHome, test } from '../fixtures/automation-exercise.fixture';
+import { test } from '../fixtures/automation-exercise.fixture';
 
 test.describe('Authentication & signup (Automation Exercise)', () => {
   test('TC01 / TS1 — register user, then delete account', async ({ ae }) => {
     const base = getUserByTestName('TC01 Register User');
     test.skip(!base, 'Add key TC01 Register User in src/data/users.json');
     const user = withUniqueEmail(base!);
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
     await ae.registerNewUserComplete(user);
     await ae.clickDeleteAccount();
     await ae.expectAccountDeleted();
@@ -16,7 +16,7 @@ test.describe('Authentication & signup (Automation Exercise)', () => {
     const base = getUserByTestName('TC01 Register User');
     test.skip(!base, 'Add key TC01 Register User in src/data/users.json');
     const user = withUniqueEmail(base!);
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
     await ae.registerNewUserComplete(user);
     await ae.logout();
     await ae.expectLoginForm();
@@ -30,7 +30,7 @@ test.describe('Authentication & signup (Automation Exercise)', () => {
     const base = getUserByTestName('TC01 Register User');
     test.skip(!base, 'Add key TC01 Register User in src/data/users.json');
     const user = withUniqueEmail(base!);
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
     await ae.registerNewUserComplete(user);
     await ae.logout();
     await ae.expectLoginForm();
@@ -46,7 +46,7 @@ test.describe('Authentication & signup (Automation Exercise)', () => {
     const base = getUserByTestName('TC01 Register User');
     test.skip(!base, 'Add key TC01 Register User in src/data/users.json');
     const user = withUniqueEmail(base!);
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
     await ae.registerNewUserComplete(user);
     await ae.logout();
     await ae.expectLoginPageTitleAfterLogout();
@@ -56,7 +56,7 @@ test.describe('Authentication & signup (Automation Exercise)', () => {
     const base = getUserByTestName('TC01 Register User');
     test.skip(!base, 'Add key TC01 Register User in src/data/users.json');
     const user = withUniqueEmail(base!);
-    await startAtAutomationExerciseHome(ae);
+    await ae.startAtHome();
     await ae.registerNewUserComplete(user);
     await ae.logout();
     await ae.expectNewUserSignup();

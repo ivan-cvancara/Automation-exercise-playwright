@@ -34,6 +34,13 @@ export class AutomationExerciseApp {
     await expect(this.page).toHaveTitle(HOME_TITLE);
   }
 
+  /** Starting state of every test: home page open, cookie consent accepted. */
+  async startAtHome(): Promise<void> {
+    await this.openHome();
+    await this.acceptCookieConsent();
+    await this.expectHomePage();
+  }
+
   async openSignupLogin(): Promise<void> {
     await Ae.headerLink(this.page, /Signup\s*\/\s*Login/).click();
   }

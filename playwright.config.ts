@@ -1,4 +1,5 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
+import { ACTION_TIMEOUT, BROWSER_DEVICES, NAVIGATION_TIMEOUT } from './src/config/browser';
 import { AUTOMATION_EXERCISE_BASE } from './src/config/env';
 
 const isCI = !!process.env.CI;
@@ -22,16 +23,16 @@ export default defineConfig({
   },
   use: {
     baseURL: AUTOMATION_EXERCISE_BASE,
-    // Without these limits a stuck click or navigation waits until the whole test times out.
-    actionTimeout: 10_000,
-    navigationTimeout: 30_000,
+    // Shared with the Cucumber hooks, see src/config/browser.ts.
+    actionTimeout: ACTION_TIMEOUT,
+    navigationTimeout: NAVIGATION_TIMEOUT,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'chromium', use: { ...BROWSER_DEVICES.chromium } },
+    { name: 'firefox', use: { ...BROWSER_DEVICES.firefox } },
+    { name: 'webkit', use: { ...BROWSER_DEVICES.webkit } },
   ],
 });

@@ -27,11 +27,11 @@ Reuse these steps when writing a scenario: `{string}` = text in double quotes, `
 
 | Keyword | Step | Line |
 |---------|------|------|
-| Given | `I start at the Automation Exercise home page` | [6](../features/step_definitions/automation-exercise-home.steps.ts#L6) |
-| Then | `I should see the Automation Exercise home page` | [10](../features/step_definitions/automation-exercise-home.steps.ts#L10) |
-| Then | `I should see the text {string}` | [14](../features/step_definitions/automation-exercise-home.steps.ts#L14) |
-| When | `I open the Test Cases page` | [18](../features/step_definitions/automation-exercise-home.steps.ts#L18) |
-| Then | `I should see the Test Cases page` | [22](../features/step_definitions/automation-exercise-home.steps.ts#L22) |
+| Given | `I start at the Automation Exercise home page` | [5](../features/step_definitions/automation-exercise-home.steps.ts#L5) |
+| Then | `I should see the Automation Exercise home page` | [9](../features/step_definitions/automation-exercise-home.steps.ts#L9) |
+| Then | `I should see the text {string}` | [13](../features/step_definitions/automation-exercise-home.steps.ts#L13) |
+| When | `I open the Test Cases page` | [17](../features/step_definitions/automation-exercise-home.steps.ts#L17) |
+| Then | `I should see the Test Cases page` | [21](../features/step_definitions/automation-exercise-home.steps.ts#L21) |
 
 ## cart.steps.ts
 

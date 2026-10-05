@@ -1,11 +1,4 @@
 {
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        ".",
-        "-p",
-        "test_*.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+  "cucumber.features": ["features/**/*.feature"],
+  "cucumber.glue": ["features/step_definitions/**/*.ts", "features/support/**/*.ts"]
 }

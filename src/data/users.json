@@ -1,0 +1,35 @@
+{
+  "users": {
+    "TC01 Register User": {
+      "firstName": "Jan",
+      "lastName": "Novak",
+      "username": "jan.novak",
+      "password": "Password123!",
+      "email": "jan.novak@example.com",
+      "dateOfBirth": "1990-01-01",
+      "firstname": "First Name",
+      "lastname": "Last Name",
+      "company": "Company",
+      "address": "Address 1223, 2nd floor",
+      "country": "India",
+      "state": "Tamil Nadu",
+      "city": "Chennai",
+      "zipcode": "600001",
+      "mobileNumber": "1234567890"
+    },
+    "TC02 Register User": {
+      "firstName": "Petra",
+      "lastName": "Svobodova",
+      "username": "petra.svobodova",
+      "password": "Password123!",
+      "email": "petra.svobodova@example.com",
+      "dateOfBirth": "1990-01-01",
+      "address": "Address",
+      "country": "India",
+      "state": "State",
+      "city": "City",
+      "zipcode": "12345",
+      "mobileNumber": "1234567890"
+    }
+  }
+}

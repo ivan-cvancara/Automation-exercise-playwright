@@ -1,7 +1,19 @@
-
-# Playwright
+# Dependencies
 node_modules/
+
+# Playwright and Cucumber output
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/playwright/.auth/
+
+# Python bytecode (stray local tooling)
+__pycache__/
+*.pyc
+
+# OS and editor files
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

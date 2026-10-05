@@ -45,14 +45,17 @@ from there, with *Show browser* for headed mode.
 | `npx playwright test <file> -g "TS9"` | One spec file / one test by title |
 | `npx playwright test <file> --headed` | Run with a visible browser |
 | `npm run test:ui` | Playwright UI mode: pick tests, timeline, DOM snapshots |
-| `npm test` | Full Playwright suite in Chromium, Firefox and WebKit (what CI runs) |
+| `npm test` | Full Playwright suite in Chromium, Firefox and WebKit (CI runs one job per browser) |
 | `npm run report` | Open the last Playwright HTML report |
-| `npm run test:cucumber` | All Gherkin scenarios (headless Chromium) |
+| `npm run test:cucumber` | All Gherkin scenarios (headless Chromium, 2 parallel workers) |
+| `BROWSER=firefox npm run test:cucumber` | Gherkin scenarios in another browser (`chromium`, `firefox`, `webkit`) |
 | `npx cucumber-js --tags @TS9` | One scenario or area by tag (`@auth`, `@catalog`, `@cart`) |
 | `npx cucumber-js --dry-run` | Check that every Gherkin step has a definition, without running |
 | `npm run steps` | Print the catalog of existing steps (`-- --write` updates `docs/steps-catalog.md`) |
 | `npm run inspect -- /contact_us` | Print roles and form elements of a live page, for writing locators |
-| `npx tsc --noEmit` | Type check the whole project |
+| `npm run typecheck` | Type check the whole project (`tsc --noEmit`) |
+| `npm run lint` | ESLint, including `no-floating-promises` (catches a missing `await`) |
+| `BASE_URL=https://... npm test` | Run against another host than the public Automation Exercise site |
 
 ## Structure
 
@@ -69,7 +72,7 @@ src/
   core/web-core.ts                Generic site-independent helpers (kept minimal)
   data/                           Test users (users.json) and loaders
   utils/                          Pure formatting and conversion helpers (prices)
-  config/env.ts                   Base URL and shared constants
+  config/env.ts                   Base URL (overridable with BASE_URL)
 docs/                             Guides, scenario template, step catalog
 scripts/                          Step catalog and page inspector
 ```
@@ -79,9 +82,13 @@ https://automationexercise.com/test_cases.
 
 ## CI
 
-GitHub Actions ([.github/workflows/playwright.yml](.github/workflows/playwright.yml)) runs the Playwright
-suite in all three browsers on every push and pull request to `main` and uploads the HTML report.
-Cucumber is not part of CI yet.
+GitHub Actions ([.github/workflows/playwright.yml](.github/workflows/playwright.yml)) runs on every push
+and pull request to `main`:
+
+1. **Type check and lint** (`npm run typecheck`, `npm run lint`). The test jobs start only when this passes.
+2. **Playwright**, one parallel job per browser (Chromium, Firefox, WebKit), 1 retry. Retried tests are
+   reported as *flaky*. Uploads the HTML report, and traces, screenshots and videos of failed tests.
+3. **Cucumber** in Chromium. Uploads the HTML report, JUnit XML and traces of failed scenarios.
 
 The tests run against a live public site. A failure can be caused by a change on the site, not
 only by the code.

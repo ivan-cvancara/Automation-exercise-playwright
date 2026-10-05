@@ -103,7 +103,8 @@ It prints the ARIA snapshot (roles, accessible names, texts) and all form contro
 ### 7. Verify
 
 ```bash
-npx tsc --noEmit
+npm run typecheck
+npm run lint
 npx cucumber-js --dry-run                                  # no undefined or ambiguous steps
 npx cucumber-js --tags @TSxx                               # the new scenario
 npx playwright test tests/automation-exercise --project=chromium -g "TSxx"   # its twin

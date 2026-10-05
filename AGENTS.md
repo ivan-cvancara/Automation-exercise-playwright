@@ -29,7 +29,7 @@ The structure mirrors an earlier Robot Framework project (`WebCore.resource` and
 Two runners share the same code in `src/`:
 
 - **Playwright Test** (`tests/**/*.spec.ts`) – the main suite, runs in CI.
-- **Cucumber.js** (`features/**/*.feature`) – Gherkin scenarios that drive Playwright directly, local only for now.
+- **Cucumber.js** (`features/**/*.feature`) – Gherkin scenarios that drive Playwright directly, also run in CI (Chromium).
 
 Stack: Node LTS, TypeScript (strict, `noEmit`), `@playwright/test`, `@cucumber/cucumber`, `ts-node`.
 
@@ -37,12 +37,13 @@ Stack: Node LTS, TypeScript (strict, `noEmit`), `@playwright/test`, `@cucumber/c
 
 ```bash
 npm install && npx playwright install       # first setup (browsers are required)
-npx tsc --noEmit                            # type check everything (src, tests, features)
+npm run typecheck                           # tsc --noEmit over src, tests, features, scripts
+npm run lint                                # ESLint (no-floating-promises, Playwright rules)
 npm run test:ae -- --project=chromium       # Automation Exercise suite, one browser (fast loop)
 npx playwright test path/to/file.spec.ts -g "TS9"   # single file / single test by title
-npm run test:cucumber                       # Cucumber scenarios (headless Chromium)
+npm run test:cucumber                       # Cucumber scenarios (headless Chromium, BROWSER=firefox|webkit to switch)
 npx cucumber-js --tags @TS9                 # single scenario / area by tag (@auth, @catalog, @cart)
-npm test                                    # full Playwright suite, all 3 browsers (what CI runs)
+npm test                                    # full Playwright suite, all 3 browsers
 npm run report                              # open the last HTML report
 npm run steps                               # catalog of existing Cucumber steps (-- --write updates docs/steps-catalog.md)
 npm run inspect -- /contact_us              # ARIA snapshot + form controls of a live page, for designing locators
@@ -54,7 +55,7 @@ Other scripts: `test:ui`, `test:headed`.
 
 | Path | Purpose |
 |------|---------|
-| `src/config/env.ts` | Shared constants: `AUTOMATION_EXERCISE_BASE` |
+| `src/config/env.ts` | `AUTOMATION_EXERCISE_BASE` (from `BASE_URL`, defaults to the public site) |
 | `src/core/web-core.ts` | Site-agnostic helpers (`expectTextVisible`); no wrappers around plain Playwright calls |
 | `src/sites/automation-exercise/locators.ts` | All Automation Exercise locators, exported as the `Ae` object |
 | `src/sites/automation-exercise/automation-exercise.app.ts` | `AutomationExerciseApp`: page/service object with high-level steps |
@@ -69,7 +70,7 @@ Other scripts: `test:ui`, `test:headed`.
 | `docs/steps-catalog.md` | Generated catalog of all step definitions (`npm run steps -- --write`) |
 | `scripts/` | `list-steps.js` (step catalog), `inspect-page.ts` (page inspector) |
 | `.claude/skills/implement-scenario/` | Claude Code skill for the main workflow |
-| `playwright.config.ts`, `cucumber.yml`, `tsconfig.json` | Runner and compiler config |
+| `playwright.config.ts`, `cucumber.yml`, `tsconfig.json`, `eslint.config.mjs` | Runner, compiler and lint config |
 
 Import from `src/` via the `@/` alias (`@/core/web-core`, `@/sites/...`). It works in both runners
 (Playwright reads `tsconfig.json` paths, Cucumber uses `tsconfig-paths/register`).
@@ -173,13 +174,15 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
   `this: AutomationExerciseWorld`) and reuse helpers from `src/` and `tests/fixtures/`
   (for example `startAtAutomationExerciseHome`).
 - Step functions must be regular `async function`, not arrow functions, otherwise `this` is not the World.
-- `features/support/hooks.ts` launches one headless Chromium per run and a fresh browser context per
-  scenario with `baseURL` set to `AUTOMATION_EXERCISE_BASE`, and sets the step timeout to 30 s
-  (Cucumber's 5 s default is too short for flow steps on the live site).
+- `features/support/hooks.ts` launches one headless browser per worker (`BROWSER` env, Chromium by
+  default) and a fresh browser context per scenario with `baseURL` set to `AUTOMATION_EXERCISE_BASE`,
+  and sets the step timeout to 30 s (Cucumber's 5 s default is too short for flow steps on the live
+  site). On failure it attaches a screenshot to the report and saves a trace to
+  `test-results/cucumber-traces/`. `cucumber.yml` runs 2 parallel workers.
 - Write steps in business language ("Given I start at the Automation Exercise home page"), reuse
   existing steps before adding new ones, and use Cucumber expressions (`{string}`, `{int}`) for
   parameters. Keep steps thin, put logic into `AutomationExerciseApp`.
-- The HTML report goes to `test-results/cucumber-report.html`.
+- The HTML report goes to `test-results/cucumber-report.html`, JUnit XML to `test-results/cucumber-junit.xml`.
 - Scenarios tagged `@new` are written by the user and not implemented yet. Implement them by
   [docs/agents/implementing-scenarios.md](docs/agents/implementing-scenarios.md), then replace the tag with `@TSxx` / `@TCxx`.
 - After adding or changing step definitions, refresh the catalog: `npm run steps -- --write`.
@@ -193,15 +196,16 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
   not with `force: true` in individual tests.
 - On product listings, the first `.col-sm-4` element is not a product card, so loops start at index 1
   (see `findProductTileByName`).
-- `AUTOMATION_EXERCISE_BASE` is a constant, not an environment variable. Change it in
-  `src/config/env.ts` if you need a different host.
+- `AUTOMATION_EXERCISE_BASE` comes from the `BASE_URL` environment variable and defaults to the
+  public site. Both runners and `npm run inspect` use it.
 
 ## Verification before you finish
 
 Run these after every change and make sure they pass:
 
 ```bash
-npx tsc --noEmit
+npm run typecheck
+npm run lint
 npx playwright test tests/automation-exercise --project=chromium
 npm run test:cucumber    # when you touched features/, src/ or tests/fixtures/
 ```
@@ -221,6 +225,12 @@ weakening the assertion.
 
 ## CI
 
-`.github/workflows/playwright.yml` runs on push/PR to `main`: `npm ci`, `npx playwright install --with-deps`,
-`npx playwright test` (all three browsers, 2 retries, 1 worker) and uploads `playwright-report/`.
-Cucumber is not part of CI yet.
+`.github/workflows/playwright.yml` runs on push/PR to `main`:
+
+- `static`: `npm run typecheck` and `npm run lint`. The test jobs depend on it.
+- `playwright`: a matrix job per browser (`--project=chromium|firefox|webkit`), 1 retry on CI,
+  default workers (`fullyParallel`). Reporters `github`, `list`, `html`, `junit`. Uploads
+  `playwright-report/` always and `test-results/` (traces, screenshots, videos) on failure.
+- `cucumber`: `npm run test:cucumber` in Chromium, uploads `test-results/`.
+
+A retried test that passes is reported as flaky. Treat flaky tests as bugs to fix, not as green.

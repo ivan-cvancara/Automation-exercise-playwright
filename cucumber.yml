@@ -1,6 +1,8 @@
 # https://github.com/cucumber/cucumber-js/blob/main/docs/configuration.md
 default:
   publish: false
+  # Scenarios are independent (fresh browser context each), so they can run in parallel workers.
+  parallel: 2
   paths:
     - features/**/*.feature
   requireModule:
@@ -13,5 +15,6 @@ default:
   format:
     - pretty
     - html:test-results/cucumber-report.html
+    - junit:test-results/cucumber-junit.xml
   formatOptions:
     snippetInterface: async-await

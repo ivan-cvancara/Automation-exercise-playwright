@@ -10,7 +10,7 @@ function readUsersFile(): UsersFile {
 }
 
 /**
- * Load a user block by stable test title (mirrors Robot `Load Current Test User From Json` + `users.json` keys).
+ * Loads a user from `users.json` by its stable data key (e.g. `"TC01 Register User"`).
  */
 export function getUserByTestName(testName: string): TestUser | undefined {
   const data = readUsersFile();

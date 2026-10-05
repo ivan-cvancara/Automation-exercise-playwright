@@ -51,10 +51,11 @@ from there, with *Show browser* for headed mode.
 | `BROWSER=firefox npm run test:cucumber` | Gherkin scenarios in another browser (`chromium`, `firefox`, `webkit`) |
 | `npx cucumber-js --tags @TS9` | One scenario or area by tag (`@auth`, `@catalog`, `@cart`) |
 | `npx cucumber-js --dry-run` | Check that every Gherkin step has a definition, without running |
-| `npm run steps` | Print the catalog of existing steps (`-- --write` updates `docs/steps-catalog.md`) |
+| `npm run steps` | Print the catalog of existing steps (`-- --write` updates `docs/steps-catalog.md`, `-- --check` verifies it) |
 | `npm run inspect -- /contact_us` | Print roles and form elements of a live page, for writing locators |
 | `npm run typecheck` | Type check the whole project (`tsc --noEmit`) |
-| `npm run lint` | ESLint, including `no-floating-promises` (catches a missing `await`) |
+| `npm run lint` | ESLint: missing `await`, `waitForTimeout`, `force: true`, selectors in specs and steps |
+| `npm run verify` | Everything to run before a commit: typecheck, lint, step catalog check, Chromium suite, Cucumber |
 | `BASE_URL=https://... npm test` | Run against another host than the public Automation Exercise site |
 
 ## Structure
@@ -85,7 +86,8 @@ https://automationexercise.com/test_cases.
 GitHub Actions ([.github/workflows/playwright.yml](.github/workflows/playwright.yml)) runs on every push
 and pull request to `main`:
 
-1. **Type check and lint** (`npm run typecheck`, `npm run lint`). The test jobs start only when this passes.
+1. **Type check, lint and step catalog** (`npm run typecheck`, `npm run lint`, `npm run steps -- --check`).
+   The test jobs start only when this passes.
 2. **Playwright**, one parallel job per browser (Chromium, Firefox, WebKit), 1 retry. Retried tests are
    reported as *flaky*. Uploads the HTML report, and traces, screenshots and videos of failed tests.
 3. **Cucumber** in Chromium. Uploads the HTML report, JUnit XML and traces of failed scenarios.

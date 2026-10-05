@@ -72,7 +72,7 @@ Avoid names that describe implementation: not `clickOverlayBtn`, `fillInputs`, `
   result belongs to an `expect*` function.
   Flow functions may include `expect*` calls as human checkpoints.
 - `expect*` functions use web-first assertions (`await expect(locator).toBeVisible()`,
-  `toHaveTitle`, `toContainText`) so they wait and retry. Never `waitForTimeout`.
+  `toHaveTitle`, `toContainText`) so they wait and retry.
 - `read*` functions return trimmed plain values (`(text ?? '').trim()`), so specs never deal with `null`.
 - Logic that a human does by looking (scan a list, find the matching product, check that every result
   matches) is allowed inside a step function, but hidden behind a business name. That is where loops
@@ -99,16 +99,11 @@ Avoid names that describe implementation: not `clickOverlayBtn`, `fillInputs`, `
 
 ## Generic UI helpers (`web-core.ts`)
 
-- Same rules as step functions, but the name and parameters are generic: `expectTextVisible(page, text)`.
-- Never wrap a single Playwright call (`click`, `fill`, `check`, `selectOption`, `goto`,
-  `expect(...).toHaveTitle`). Such wrappers hide nothing, duplicate Playwright's auto-waiting and
-  make the code harder to read for anyone who knows Playwright.
-- Do not scroll manually (`window.scrollTo`); actions scroll the element into view themselves.
-- No site URLs, selectors or texts. If a helper only makes sense for one site, it belongs in that
-  site's app class.
-- Signature style: `(page | locator, value?, options?: { timeout?: number }) => Promise<void>`.
+- Generic name and parameters, no site URLs, selectors or texts: `expectTextVisible(page, text)`.
+- Never wrap a single Playwright call (`click`, `fill`, `selectOption`, `goto`, `expect(...)`) and
+  never scroll manually: Playwright already waits for actionability and scrolls into view.
 - Add a helper only when at least two places need it and it combines several calls or wraps a
-  Playwright pattern that is easy to get wrong. Remove helpers nobody calls.
+  pattern that is easy to get wrong. Remove helpers nobody calls.
 
 ## Locators (`locators.ts`)
 
@@ -148,8 +143,7 @@ Rules:
 ## General TypeScript style
 
 - `strict` mode, no `any`, no non-null `!` except right after a `test.skip(!x, ...)` guard.
-- `async` / `await` everywhere, always `await` Playwright calls (a missing `await` is the most common
-  cause of flaky tests).
+- `async` / `await` everywhere. A missing `await` is caught by `npm run lint` (`no-floating-promises`).
 - Import from `src/` via the `@/` alias. Use `import type` for type-only imports.
 - Match the surrounding code: single quotes, semicolons, 2-space indent, trailing commas in multi-line
   literals.

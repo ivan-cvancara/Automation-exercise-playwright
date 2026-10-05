@@ -103,17 +103,11 @@ It prints the ARIA snapshot (roles, accessible names, texts) and all form contro
 ### 7. Verify
 
 ```bash
-npm run typecheck
-npm run lint
-npx cucumber-js --dry-run                                  # no undefined or ambiguous steps
-npx cucumber-js --tags @TSxx                               # the new scenario
-npx playwright test tests/automation-exercise --project=chromium -g "TSxx"   # its twin
-npm run steps -- --write                                   # refresh docs/steps-catalog.md
+npm run steps -- --write                                              # refresh docs/steps-catalog.md
+npx cucumber-js --tags @TSxx                                          # the new scenario
+npx playwright test -g "TSxx" --project=chromium --repeat-each=3      # its twin, stable on the live site
+npm run verify                                                        # everything else
 ```
-
-If you changed existing app methods or locators, also run the full checks from
-[AGENTS.md](../../AGENTS.md#verification-before-you-finish). Run every new test at least twice.
-The site is live, and one green run does not prove the test is stable.
 
 ### 8. Report
 
@@ -122,4 +116,6 @@ End with a short report to the user:
 - the mapping table (step → step definition → `ae` method, marked *new* / *reused*),
 - files changed,
 - suggestions for the Gherkin from step 2 (if any), as concrete rewritten lines,
+- instructions you updated, by [Keep the instructions in sync](../../AGENTS.md#keep-the-instructions-in-sync)
+  (for example a new reusable pattern or a corrected rule), or "none",
 - test results of both runners. If something fails because of the live site, say so.

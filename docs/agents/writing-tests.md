@@ -85,31 +85,16 @@ used by Cucumber, where `test.step` throws.
 
 | Do not | Do instead |
 |--------|------------|
-| `page.locator('.col-sm-4')`, any CSS/XPath | Add a locator to `locators.ts` and a method to the app class |
+| `page.locator(...)`, `page.getBy*(...)`, any CSS/XPath (`npm run lint` fails) | Add a locator to `locators.ts` and a method to the app class |
 | `for` / `while` loops, `if` / `else`, `try` / `catch` | Move the logic into one app method with a business name, e.g. `expectAllSearchResultsContain('Blue')` |
 | Calculations, string parsing, regex juggling | A conversion helper in `src/utils/` or a `readX` method in the app class |
-| Magic values with unclear meaning (`'4'`, `'/product_details/1'`) without context | A named constant (`const QUANTITY = '4'`) or a self-explaining method argument |
-| `page.waitForTimeout`, sleeps, manual retries | Web-first assertions inside `expectX` methods |
+| Magic values with unclear meaning (`'4'`, `'/product_details/1'`) without context | A named constant (`const QUANTITY = 4`) or a self-explaining method argument |
+| Sleeps, manual retries (`waitForTimeout` fails lint) | Web-first assertions inside `expectX` methods |
 | Several unrelated user journeys in one test | One test per journey |
 
-### Bad and good example
+### Example
 
-Bad: the test leaks DOM details and contains logic a human never "does".
-
-```ts
-test('TS9 - search product lists matching cards', async ({ ae, page }) => {
-  await startAtAutomationExerciseHome(ae);
-  await ae.openAllProducts();
-  await ae.searchProductsOnListing('Blue');
-  const count = await page.locator('.col-sm-4').count();
-  for (let i = 1; i < count; i++) {
-    const name = (await page.locator('.col-sm-4').nth(i).locator('.productinfo p').textContent() ?? '').toLowerCase();
-    expect(name).toContain('blue');
-  }
-});
-```
-
-Good: each line is a step from the manual test case "search for Blue, every result is a blue product".
+Each line is a step from the manual test case "search for Blue, every result is a blue product":
 
 ```ts
 test('TS9 - search shows only matching products', async ({ ae }) => {
@@ -125,9 +110,8 @@ test('TS9 - search shows only matching products', async ({ ae }) => {
 });
 ```
 
-The loop did not disappear, it moved into `AutomationExerciseApp.expectAllSearchResultsContain`
-behind a business name. The "bad" version is what TS9 looked like before the refactoring; the "good"
-one is the current code in `tests/automation-exercise/catalog.spec.ts`.
+Checking every result needs a loop. The loop lives in `AutomationExerciseApp.expectAllSearchResultsContain`
+behind a business name, not in the spec.
 
 ### Reference specs
 

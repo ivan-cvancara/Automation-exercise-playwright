@@ -15,6 +15,10 @@ messages are written in English, even when the conversation with the user is in 
 
 This file contains the overview, commands and the short version of the rules.
 
+**These instructions are part of the code.** When your change affects how code should be written
+elsewhere in the project, update the rules in the same change. See
+[Keep the instructions in sync](#keep-the-instructions-in-sync).
+
 **Main workflow:** the user writes Gherkin scenarios by hand, the agent implements everything else
 (step definitions, app methods, locators, the twin Playwright spec) and verifies both runners.
 In Claude Code this is the `/implement-scenario` skill (`.claude/skills/implement-scenario/`).
@@ -23,8 +27,6 @@ In Claude Code this is the `/implement-scenario` skill (`.claude/skills/implemen
 
 Playwright training project: E2E tests in TypeScript against the public demo shop
 [Automation Exercise](https://automationexercise.com).
-The structure mirrors an earlier Robot Framework project (`WebCore.resource` and
-`AutomationExercise.resource`), so comments often reference Robot keywords.
 
 Two runners share the same code in `src/`:
 
@@ -38,7 +40,8 @@ Stack: Node LTS, TypeScript (strict, `noEmit`), `@playwright/test`, `@cucumber/c
 ```bash
 npm install && npx playwright install       # first setup (browsers are required)
 npm run typecheck                           # tsc --noEmit over src, tests, features, scripts
-npm run lint                                # ESLint (no-floating-promises, Playwright rules)
+npm run lint                                # ESLint (no-floating-promises, Playwright rules, no selectors in specs)
+npm run verify                              # everything to run before finishing: typecheck, lint, step catalog, Chromium, Cucumber
 npm run test:ae -- --project=chromium       # Automation Exercise suite, one browser (fast loop)
 npx playwright test path/to/file.spec.ts -g "TS9"   # single file / single test by title
 npm run test:cucumber                       # Cucumber scenarios (headless Chromium, BROWSER=firefox|webkit to switch)
@@ -139,10 +142,9 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
 - Use web-first assertions that auto-retry: `await expect(locator).toBeVisible()`,
   `toHaveText`, `toContainText`, `toHaveTitle`, `toHaveURL`. Avoid
   `expect(await locator.textContent()).toBe(...)` for anything that can change over time.
-- Never use `page.waitForTimeout()` or fixed sleeps. Wait for a locator, URL or response instead.
-- Do not add `{ force: true }` to clicks to make a test pass; fix the cause (overlay, wrong element).
-- Never commit `test.only` (CI fails on it via `forbidOnly`). Use `test.skip` with a reason only
-  when needed.
+- `npm run lint` enforces, and you must not disable: no selectors in specs and step definitions,
+  no `waitForTimeout`, no `{ force: true }`, no `test.only`, no un-awaited promises. Fix the cause
+  (wrong element, overlay, missing locator method) instead of adding an `eslint-disable` comment.
 - Do not raise global timeouts or retries to hide flakiness.
 
 ## Test data
@@ -185,7 +187,8 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
 - The HTML report goes to `test-results/cucumber-report.html`, JUnit XML to `test-results/cucumber-junit.xml`.
 - Scenarios tagged `@new` are written by the user and not implemented yet. Implement them by
   [docs/agents/implementing-scenarios.md](docs/agents/implementing-scenarios.md), then replace the tag with `@TSxx` / `@TCxx`.
-- After adding or changing step definitions, refresh the catalog: `npm run steps -- --write`.
+- After adding or changing step definitions, refresh the catalog: `npm run steps -- --write`
+  (CI fails when it is out of date).
 
 ## Known pitfalls
 
@@ -199,18 +202,43 @@ Full rules: [docs/agents/writing-tests.md](docs/agents/writing-tests.md) and
 - `AUTOMATION_EXERCISE_BASE` comes from the `BASE_URL` environment variable and defaults to the
   public site. Both runners and `npm run inspect` use it.
 
+## Keep the instructions in sync
+
+`AGENTS.md`, `docs/agents/`, `.claude/skills/` and `README.md` describe how to write code here. A
+rule that no longer matches the code makes the next agent repeat a removed pattern. So whenever
+you finish a change, ask: *does this change how someone should write code elsewhere?* If yes,
+update the rules **in the same change**.
+
+Typical triggers:
+
+- You add, rename or remove a helper, app method, locator pattern, fixture, script, command,
+  config option, lint rule or folder that the instructions mention or that others should use.
+- You change a convention: naming, test structure, data handling, cleanup, waiting, reporting.
+- You find that an existing rule is wrong, outdated, or leads to bad code.
+- A fix in one place reveals the same flawed pattern elsewhere in the code.
+
+What to do:
+
+1. Search for every mention of the old name or pattern:
+   `grep -rn "<name or pattern>" AGENTS.md docs/ .claude/ README.md src/ tests/ features/`.
+2. Update the one place where the rule lives (the guide for the task, see the table at the top) and
+   remove or fix stale mentions elsewhere. Do not add a second copy of a rule.
+3. Prefer enforcing a rule with tooling (lint rule, type, CI check) over adding prose. When you add
+   such a check, delete the prose it replaces and mention the check in one line.
+4. If the same flawed pattern exists elsewhere in the code, fix it too, or list it in your report.
+5. In your final report, name the instructions you changed and why.
+
 ## Verification before you finish
 
-Run these after every change and make sure they pass:
-
 ```bash
-npm run typecheck
-npm run lint
-npx playwright test tests/automation-exercise --project=chromium
-npm run test:cucumber    # when you touched features/, src/ or tests/fixtures/
+npm run verify    # typecheck, lint, step catalog check, Chromium suite, Cucumber
 ```
 
-Run the full `npm test` (all browsers) when changing shared code in `src/core/` or the config.
+For a new or changed test, also check that it is stable on the live site:
+`npx playwright test -g "TSxx" --project=chromium --repeat-each=3`. CI runs all three browsers;
+locally Chromium (plus Firefox for changes in `src/core/` or the config) is enough.
+
+Before finishing, also run through [Keep the instructions in sync](#keep-the-instructions-in-sync).
 If a test fails because of the live site and not your change, say so explicitly instead of
 weakening the assertion.
 
@@ -220,14 +248,14 @@ weakening the assertion.
   `README.md` when you change commands or structure.
 - **Ask first:** adding or upgrading dependencies (then run `npx playwright install`), changing
   `playwright.config.ts`, `cucumber.yml`, `tsconfig.json` or the CI workflow.
-- **Don't:** commit `node_modules/`, `test-results/`, `playwright-report/`, edit generated reports,
-  delete or skip existing tests to make the suite green.
+- **Don't:** edit generated reports or `docs/steps-catalog.md` by hand, delete or skip existing tests
+  to make the suite green.
 
 ## CI
 
 `.github/workflows/playwright.yml` runs on push/PR to `main`:
 
-- `static`: `npm run typecheck` and `npm run lint`. The test jobs depend on it.
+- `static`: `npm run typecheck`, `npm run lint` and `npm run steps -- --check`. The test jobs depend on it.
 - `playwright`: a matrix job per browser (`--project=chromium|firefox|webkit`), 1 retry on CI,
   default workers (`fullyParallel`). Reporters `github`, `list`, `html`, `junit`. Uploads
   `playwright-report/` always and `test-results/` (traces, screenshots, videos) on failure.

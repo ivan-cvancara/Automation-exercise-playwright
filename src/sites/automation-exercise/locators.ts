@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Central locators for automationexercise.com (same idea as `${AE_LOC_*}` in Robot).
+ * Central locators for automationexercise.com.
  * Expose as functions so we always re-query fresh elements.
  */
 export const Ae = {

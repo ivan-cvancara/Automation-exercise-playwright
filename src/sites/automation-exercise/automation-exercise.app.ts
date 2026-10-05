@@ -13,7 +13,7 @@ export type ProductInfo = ListedProduct & { category: string };
 export type CartItem = ListedProduct & { quantity: number };
 
 /**
- * Page/service object for https://automationexercise.com — high-level steps (Robot `AutomationExercise.resource`).
+ * Page/service object for https://automationexercise.com: one method per user step, shared by both runners.
  */
 export class AutomationExerciseApp {
   constructor(private page: Page) {}

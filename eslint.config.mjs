@@ -35,6 +35,29 @@ export default tseslint.config(
     },
   },
   {
+    // Rules for all Playwright code, including the app class shared with Cucumber.
+    files: ['src/**/*.ts', 'tests/**/*.ts', 'features/**/*.ts'],
+    plugins: playwright.configs['flat/recommended'].plugins,
+    rules: {
+      'playwright/no-wait-for-timeout': 'error',
+      'playwright/no-force-option': 'error',
+      'playwright/no-page-pause': 'error',
+    },
+  },
+  {
+    // Specs and step definitions speak business language only: selectors belong in `locators.ts`.
+    files: ['tests/automation-exercise/**/*.ts', 'features/step_definitions/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.property.name=/^(locator|getBy[A-Z]\\w*|\\$\\$?|waitForSelector)$/]',
+          message: 'No selectors in specs or step definitions. Add a locator to locators.ts and an ae.* method.',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.js'],
     ...tseslint.configs.disableTypeChecked,
     languageOptions: {

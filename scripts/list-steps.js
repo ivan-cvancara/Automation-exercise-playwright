@@ -5,6 +5,7 @@
  *
  *   npm run steps            # print
  *   npm run steps -- --write # print + update docs/steps-catalog.md
+ *   npm run steps -- --check # exit 1 when docs/steps-catalog.md is out of date (used in CI)
  *
  * Plain JavaScript on purpose: cucumber.yml already registers ts-node for the step definitions,
  * running this file through ts-node as well would compile them twice.
@@ -47,6 +48,15 @@ async function main() {
   }
 
   const markdown = lines.join('\n');
+  if (process.argv.includes('--check')) {
+    const current = fs.existsSync(CATALOG_PATH) ? fs.readFileSync(CATALOG_PATH, 'utf-8') : '';
+    if (current !== markdown) {
+      process.stderr.write('docs/steps-catalog.md is out of date. Run `npm run steps -- --write` and commit it.\n');
+      process.exit(1);
+    }
+    process.stderr.write('docs/steps-catalog.md is up to date.\n');
+    return;
+  }
   process.stdout.write(markdown);
   if (process.argv.includes('--write')) {
     fs.writeFileSync(CATALOG_PATH, markdown);

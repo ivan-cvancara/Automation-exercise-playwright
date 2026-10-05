@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   static:
-    name: Type check and lint
+    name: Type check, lint, step catalog
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
@@ -24,6 +24,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - name: Check that docs/steps-catalog.md is up to date
+        run: npm run steps -- --check
 
   playwright:
     name: Playwright (${{ matrix.project }})

@@ -54,8 +54,8 @@ Other scripts: `test:ui`, `test:headed`.
 
 | Path | Purpose |
 |------|---------|
-| `src/config/env.ts` | Shared constants: `AUTOMATION_EXERCISE_BASE`, `DEFAULT_TIMEOUT_MS` |
-| `src/core/web-core.ts` | Site-agnostic helpers (`gotoUrl`, `clickWhenVisible`, `fillWhenVisible`, `expectTextVisible`, ...) |
+| `src/config/env.ts` | Shared constants: `AUTOMATION_EXERCISE_BASE` |
+| `src/core/web-core.ts` | Site-agnostic helpers (`expectTextVisible`); no wrappers around plain Playwright calls |
 | `src/sites/automation-exercise/locators.ts` | All Automation Exercise locators, exported as the `Ae` object |
 | `src/sites/automation-exercise/automation-exercise.app.ts` | `AutomationExerciseApp`: page/service object with high-level steps |
 | `src/data/users.json`, `user-loader.ts`, `types.ts` | Test data keyed by name, `getUserByTestName`, `withUniqueEmail`, `TestUser` |
@@ -78,8 +78,9 @@ Import from `src/` via the `@/` alias (`@/core/web-core`, `@/sites/...`). It wor
 
 Keep the three layers separate. Put code in the lowest layer where it fits:
 
-1. **`src/core/web-core.ts`** – generic, reusable actions and assertions. No URLs, selectors or texts
-   of any specific site.
+1. **`src/core/web-core.ts`** – generic, reusable helpers. No URLs, selectors or texts of any specific
+   site. Do not wrap `click`, `fill`, `selectOption` or `expect`: Playwright already auto-waits and
+   web-first assertions already retry. Call them directly on `Ae.*` locators.
 2. **`src/sites/<site>/`** – everything site-specific.
    - New selectors go into `locators.ts` as functions `(p: Page, ...) => Locator`, so every call
      queries the page fresh.

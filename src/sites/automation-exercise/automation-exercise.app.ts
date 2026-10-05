@@ -1,5 +1,4 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { clickWhenVisible, expectTitleIs, expectVisible, fillWhenVisible, scrollPageToBottom, selectOptionByLabel } from '@/core/web-core';
 import type { TestUser } from '@/data/types';
 import { multiplyPrice } from '@/utils/price';
 import { Ae } from './locators';
@@ -19,10 +18,6 @@ export type CartItem = ListedProduct & { quantity: number };
 export class AutomationExerciseApp {
   constructor(private page: Page) {}
 
-  get rawPage(): Page {
-    return this.page;
-  }
-
   /** Uses Playwright `use.baseURL` (see `playwright.config.ts`). */
   async openHome(): Promise<void> {
     await this.page.goto('/');
@@ -36,11 +31,11 @@ export class AutomationExerciseApp {
   }
 
   async expectHomePage(): Promise<void> {
-    await expectTitleIs(this.page, HOME_TITLE);
+    await expect(this.page).toHaveTitle(HOME_TITLE);
   }
 
   async openSignupLogin(): Promise<void> {
-    await clickWhenVisible(Ae.headerLink(this.page, /Signup\s*\/\s*Login/));
+    await Ae.headerLink(this.page, /Signup\s*\/\s*Login/).click();
   }
 
   /** Direct navigation to `/login` (both forms); prefer when the header link is flaky after redirects. */
@@ -57,12 +52,12 @@ export class AutomationExerciseApp {
   }
 
   async fillSignupNameAndEmail(name: string, email: string): Promise<void> {
-    await fillWhenVisible(Ae.signupName(this.page), name);
-    await fillWhenVisible(Ae.signupEmail(this.page), email);
+    await Ae.signupName(this.page).fill(name);
+    await Ae.signupEmail(this.page).fill(email);
   }
 
   async submitSignup(): Promise<void> {
-    await clickWhenVisible(Ae.signupButton(this.page));
+    await Ae.signupButton(this.page).click();
   }
 
   async expectEnterAccountInformation(): Promise<void> {
@@ -86,24 +81,24 @@ export class AutomationExerciseApp {
 
   async fillAccountDetails(user: TestUser): Promise<void> {
     await this.page.getByRole('radio', { name: 'Mr.' }).check();
-    await fillWhenVisible(Ae.password(this.page), user.password);
+    await Ae.password(this.page).fill(user.password);
     await Ae.daySelect(this.page).selectOption('2');
-    await selectOptionByLabel(Ae.monthSelect(this.page), 'January');
+    await Ae.monthSelect(this.page).selectOption({ label: 'January' });
     await Ae.yearSelect(this.page).selectOption('1981');
     await this.page.getByRole('checkbox', { name: 'Sign up for our newsletter!' }).check();
     await this.page.getByRole('checkbox', { name: 'Receive special offers from our partners!' }).check();
-    await fillWhenVisible(Ae.firstName(this.page), user.firstName);
-    await fillWhenVisible(Ae.lastName(this.page), user.lastName);
-    await fillWhenVisible(Ae.address(this.page), user.address);
-    await selectOptionByLabel(Ae.country(this.page), user.country);
-    await fillWhenVisible(Ae.state(this.page), user.state);
-    await fillWhenVisible(Ae.city(this.page), user.city);
-    await fillWhenVisible(Ae.zipcode(this.page), user.zipcode);
-    await fillWhenVisible(Ae.mobileNumber(this.page), user.mobileNumber);
+    await Ae.firstName(this.page).fill(user.firstName);
+    await Ae.lastName(this.page).fill(user.lastName);
+    await Ae.address(this.page).fill(user.address);
+    await Ae.country(this.page).selectOption({ label: user.country });
+    await Ae.state(this.page).fill(user.state);
+    await Ae.city(this.page).fill(user.city);
+    await Ae.zipcode(this.page).fill(user.zipcode);
+    await Ae.mobileNumber(this.page).fill(user.mobileNumber);
   }
 
   async createAccount(): Promise<void> {
-    await clickWhenVisible(Ae.createAccount(this.page));
+    await Ae.createAccount(this.page).click();
   }
 
   async expectAccountCreated(): Promise<void> {
@@ -111,11 +106,7 @@ export class AutomationExerciseApp {
   }
 
   async continueAfterAccountMessage(): Promise<void> {
-    await clickWhenVisible(Ae.continueButton(this.page));
-  }
-
-  async expectLoggedInBar(): Promise<void> {
-    await expect(this.page.locator('i.fa.fa-user')).toBeVisible();
+    await Ae.continueButton(this.page).click();
   }
 
   async expectLoggedInText(): Promise<void> {
@@ -123,7 +114,7 @@ export class AutomationExerciseApp {
   }
 
   async clickDeleteAccount(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('link', { name: /Delete Account/ }));
+    await this.page.getByRole('link', { name: /Delete Account/ }).click();
   }
 
   async expectAccountDeleted(): Promise<void> {
@@ -131,17 +122,17 @@ export class AutomationExerciseApp {
   }
 
   async submitLogin(email: string, password: string): Promise<void> {
-    await fillWhenVisible(Ae.loginEmail(this.page), email);
-    await fillWhenVisible(Ae.loginPassword(this.page), password);
-    await clickWhenVisible(Ae.loginButton(this.page));
+    await Ae.loginEmail(this.page).fill(email);
+    await Ae.loginPassword(this.page).fill(password);
+    await Ae.loginButton(this.page).click();
   }
 
   async logout(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('link', { name: /Logout/ }));
+    await this.page.getByRole('link', { name: /Logout/ }).click();
   }
 
   async expectLoginPageTitleAfterLogout(): Promise<void> {
-    await expectTitleIs(this.page, 'Automation Exercise - Signup / Login');
+    await expect(this.page).toHaveTitle('Automation Exercise - Signup / Login');
   }
 
   async expectLoginError(): Promise<void> {
@@ -153,38 +144,35 @@ export class AutomationExerciseApp {
   }
 
   async openTestCasesPage(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('button', { name: 'Test Cases' }));
+    await this.page.getByRole('button', { name: 'Test Cases' }).click();
   }
 
   async expectTestCasesPageTitle(): Promise<void> {
-    await expectTitleIs(
-      this.page,
-      'Automation Practice Website for UI Testing - Test Cases',
-    );
+    await expect(this.page).toHaveTitle('Automation Practice Website for UI Testing - Test Cases');
   }
-  
+
   async openAllProducts(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('link', { name: /Products/ }));
+    await this.page.getByRole('link', { name: /Products/ }).click();
   }
 
   async expectAllProductsPage(): Promise<void> {
-    await expectTitleIs(this.page, 'Automation Exercise - All Products');
-    await expectVisible(this.page.locator('.features_items'));
+    await expect(this.page).toHaveTitle('Automation Exercise - All Products');
+    await expect(this.page.locator('.features_items')).toBeVisible();
   }
 
   async openViewProductFirst(): Promise<void> {
-    await clickWhenVisible(Ae.viewProductLink(this.page).first());
+    await Ae.viewProductLink(this.page).first().click();
   }
 
   /** Opens “View Product” of the first listed product whose name contains `productName`. */
   async openProductDetails(productName: string): Promise<void> {
     const tile = await this.findProductTileByNameOrThrow(productName);
-    await clickWhenVisible(Ae.viewProductLink(tile));
+    await Ae.viewProductLink(tile).click();
   }
 
   /** Checks the detail page layout that every product shares (title + info labels). */
   async expectProductDetailsPage(): Promise<void> {
-    await expectTitleIs(this.page, 'Automation Exercise - Product Details');
+    await expect(this.page).toHaveTitle('Automation Exercise - Product Details');
     for (const label of ['Availability:', 'Condition:', 'Brand:'] as const) {
       await expect(Ae.productDetailInfo(this.page).getByText(label)).toBeVisible();
     }
@@ -198,10 +186,8 @@ export class AutomationExerciseApp {
   }
 
   async searchProductsOnListing(term: string): Promise<void> {
-    const input = this.page.locator('input#search_product').or(this.page.locator('.input-lg')).first();
-    await fillWhenVisible(input, term);
-    const btn = this.page.locator('button#submit_search').or(this.page.locator('#submit_search')).or(this.page.locator('.btn-lg')).first();
-    await clickWhenVisible(btn);
+    await Ae.searchInput(this.page).fill(term);
+    await Ae.searchSubmit(this.page).click();
   }
 
   async expectSearchedProducts(): Promise<void> {
@@ -242,11 +228,11 @@ export class AutomationExerciseApp {
 
   async addProductFromTileToCart(tile: Locator): Promise<void> {
     await tile.hover();
-    await clickWhenVisible(tile.locator('.overlay-content > .btn').first());
+    await tile.locator('.overlay-content > .btn').first().click();
   }
 
   async clickContinueShopping(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('button', { name: 'Continue Shopping' }));
+    await this.page.getByRole('button', { name: 'Continue Shopping' }).click();
   }
 
   async findProductTileByName(nameContains: string): Promise<Locator | null> {
@@ -276,18 +262,18 @@ export class AutomationExerciseApp {
   }
 
   async openCartFromHeader(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('link', { name: /Cart/ }));
+    await this.page.getByRole('link', { name: /Cart/ }).click();
   }
 
   async expectCartPage(): Promise<void> {
-    await expectTitleIs(this.page, 'Automation Exercise - Checkout');
+    await expect(this.page).toHaveTitle('Automation Exercise - Checkout');
   }
 
+  /** No explicit scroll needed: `fill` and `click` scroll the footer form into view. */
   async scrollToFooterAndSubscribe(email: string): Promise<void> {
-    await scrollPageToBottom(this.page);
     await expect(this.page.getByText('SUBSCRIPTION')).toBeVisible();
-    await fillWhenVisible(Ae.subscribeEmail(this.page), email);
-    await clickWhenVisible(Ae.subscribeButton(this.page));
+    await Ae.subscribeEmail(this.page).fill(email);
+    await Ae.subscribeButton(this.page).click();
   }
 
   async expectSubscribedMessage(): Promise<void> {
@@ -295,11 +281,11 @@ export class AutomationExerciseApp {
   }
 
   async setQuantity(quantity: number): Promise<void> {
-    await fillWhenVisible(Ae.quantityInput(this.page), String(quantity));
+    await Ae.quantityInput(this.page).fill(String(quantity));
   }
 
   async addToCartOnDetailPage(): Promise<void> {
-    await clickWhenVisible(this.page.getByRole('button', { name: 'Add to cart' }));
+    await this.page.getByRole('button', { name: 'Add to cart' }).click();
   }
 
   async openViewCartFromModalOrLink(): Promise<void> {

@@ -66,8 +66,10 @@ Avoid names that describe implementation: not `clickOverlayBtn`, `fillInputs`, `
 
 ### Behaviour
 
-- Action functions do not assert the outcome. Waiting for the target element is fine (that is what
-  `clickWhenVisible` / `fillWhenVisible` do), checking the result belongs to an `expect*` function.
+- Action functions do not assert the outcome. Call Playwright actions directly on the locator
+  (`await Ae.loginButton(this.page).click()`): they already wait until the element is visible,
+  enabled and stable, so no explicit `waitFor` or "when visible" wrapper is needed. Checking the
+  result belongs to an `expect*` function.
   Flow functions may include `expect*` calls as human checkpoints.
 - `expect*` functions use web-first assertions (`await expect(locator).toBeVisible()`,
   `toHaveTitle`, `toContainText`) so they wait and retry. Never `waitForTimeout`.
@@ -79,7 +81,7 @@ Avoid names that describe implementation: not `clickOverlayBtn`, `fillInputs`, `
   ignore if absent, like `acceptCookieConsent` (`isVisible().catch(() => false)`).
 - Throw a clear error with the business value when something is not found:
   ``throw new Error(`Product not found: ${productName}`)``.
-- Use the locator from `Ae.*` or a generic helper from `web-core.ts`. Do not inline new selectors in
+- Use the locator from `Ae.*`. Do not inline new selectors in
   the app class when they are reused or non-trivial; add them to `locators.ts`.
 - Do not call `test.step`, `test.skip` or other Playwright Test APIs here. The class is shared with
   Cucumber, where they do not exist. Importing `expect` from `@playwright/test` is fine.
@@ -97,13 +99,16 @@ Avoid names that describe implementation: not `clickOverlayBtn`, `fillInputs`, `
 
 ## Generic UI helpers (`web-core.ts`)
 
-- Same rules as step functions, but the name and parameters are generic: `clickWhenVisible(locator)`,
-  `expectTextVisible(page, text)`.
+- Same rules as step functions, but the name and parameters are generic: `expectTextVisible(page, text)`.
+- Never wrap a single Playwright call (`click`, `fill`, `check`, `selectOption`, `goto`,
+  `expect(...).toHaveTitle`). Such wrappers hide nothing, duplicate Playwright's auto-waiting and
+  make the code harder to read for anyone who knows Playwright.
+- Do not scroll manually (`window.scrollTo`); actions scroll the element into view themselves.
 - No site URLs, selectors or texts. If a helper only makes sense for one site, it belongs in that
   site's app class.
 - Signature style: `(page | locator, value?, options?: { timeout?: number }) => Promise<void>`.
-- Add a helper only when at least two places need it or when it wraps a Playwright pattern that is
-  easy to get wrong.
+- Add a helper only when at least two places need it and it combines several calls or wraps a
+  Playwright pattern that is easy to get wrong. Remove helpers nobody calls.
 
 ## Locators (`locators.ts`)
 

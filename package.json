@@ -1,8 +1,8 @@
 {
-  "name": "playwright-trainig",
+  "name": "playwright-training",
   "version": "1.0.0",
   "private": true,
-  "description": "Playwright training — shared WebCore-style helpers, site app objects, JSON test data",
+  "description": "Playwright training - E2E tests for the Automation Exercise demo shop (Playwright Test + Cucumber)",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",

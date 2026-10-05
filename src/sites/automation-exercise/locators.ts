@@ -7,7 +7,6 @@ import type { Locator, Page } from '@playwright/test';
 export const Ae = {
   consentButton: (p: Page) => p.getByRole('button', { name: 'Consent' }),
   headerLink: (p: Page, name: RegExp | string) => p.getByRole('link', { name: name }),
-  button: (p: Page, name: string) => p.getByRole('button', { name: name }),
   loginEmail: (p: Page) => p.locator('[data-qa="login-email"]'),
   loginPassword: (p: Page) => p.locator('[data-qa="login-password"]'),
   loginButton: (p: Page) => p.locator('[data-qa="login-button"]'),

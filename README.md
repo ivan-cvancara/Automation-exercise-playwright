@@ -66,7 +66,7 @@ tests/
   fixtures/                       `test` with the `ae` fixture, startAtAutomationExerciseHome
 src/
   sites/automation-exercise/      locators.ts (selectors) + automation-exercise.app.ts (page steps)
-  core/web-core.ts                Generic helpers for any site (click, fill, assert)
+  core/web-core.ts                Generic site-independent helpers (kept minimal)
   data/                           Test users (users.json) and loaders
   utils/                          Pure formatting and conversion helpers (prices)
   config/env.ts                   Base URL and shared constants

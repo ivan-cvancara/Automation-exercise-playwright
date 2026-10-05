@@ -85,7 +85,7 @@ used by Cucumber, where `test.step` throws.
 
 | Do not | Do instead |
 |--------|------------|
-| `page.locator('.col-sm-4')`, `ae.rawPage.locator('#product-1')`, any CSS/XPath | Add a locator to `locators.ts` and a method to the app class |
+| `page.locator('.col-sm-4')`, any CSS/XPath | Add a locator to `locators.ts` and a method to the app class |
 | `for` / `while` loops, `if` / `else`, `try` / `catch` | Move the logic into one app method with a business name, e.g. `expectAllSearchResultsContain('Blue')` |
 | Calculations, string parsing, regex juggling | A conversion helper in `src/utils/` or a `readX` method in the app class |
 | Magic values with unclear meaning (`'4'`, `'/product_details/1'`) without context | A named constant (`const QUANTITY = '4'`) or a self-explaining method argument |
